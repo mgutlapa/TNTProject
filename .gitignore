@@ -1,0 +1,17 @@
+# Factory data never goes in git
+data/
+*.csv
+*.xlsx
+*.db
+*.sqlite
+
+# Secrets
+.env
+.streamlit/secrets.toml
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
