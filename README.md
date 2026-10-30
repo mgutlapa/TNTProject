@@ -1,8 +1,17 @@
 # TagNTrac Factory Data Dashboard
 
-A web dashboard for factory test data. Load the shipment list CSV from the
-factory, filter units by test date and lot, choose which test parameters to
-see, and get a units × parameters data matrix with Cpk for each parameter.
+A web dashboard for factory test data. Load the shipment list from the
+factory (.csv, .xlsx or .xls), then:
+
+- **Left column (controls):** load files, filter by test date and lot, pick
+  the parameter and plot type (histogram, scatter, box plot, average), set
+  spec limits (LSL/USL), and choose what counts as an outlier.
+- **Top right (statistics + plot):** Cpk, Cp, mean, σ, mean ± 3σ, expected
+  fallout (ppm) and yield, units out of spec, and the plot. Export the plot as
+  interactive HTML, its data as CSV, or a PNG via the camera icon.
+- **Bottom right (problem units):** units outside spec, beyond ±3σ, or that
+  failed the factory test, each with the reason. Also the units you clicked
+  on the plot, and all units. Every table exports to CSV or Excel.
 
 ## Current setup (prototype)
 
@@ -23,7 +32,7 @@ source .venv/bin/activate          # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
 # Load a factory file (or use the upload box in the app's sidebar)
-python -m tnt.loader path/to/shipment.csv
+python -m tnt.loader path/to/shipment.xlsx
 
 streamlit run app.py               # opens http://localhost:8501
 ```
@@ -35,8 +44,8 @@ Others on the same network can open `http://<this-machine's-IP>:8501`.
 ```
 app.py            Streamlit dashboard
 tnt/db.py         Database connection + table definitions
-tnt/loader.py     Reads the factory CSV into the database
-tnt/stats.py      Cpk and summary statistics
+tnt/loader.py     Reads factory .csv/.xlsx/.xls files into the database
+tnt/stats.py      Mean, sigma, Cp/Cpk, expected fallout
 tests/            Run with: pytest
 data/             Local database lives here (git-ignored)
 ```
@@ -55,8 +64,13 @@ data/             Local database lives here (git-ignored)
   export. They are stored in mΩ.
 - The date filter uses `Test_Time` (when the unit was tested). `Scan_Time`
   is when the carton was packed.
-- Cpk needs LSL/USL for each parameter. Enter them in the app under
-  "Spec limits".
+- Cpk needs LSL/USL for each parameter. ESR defaults to 100–200 mΩ; change
+  the limits in the app and click "Save limits as default" to keep them.
+  Leave one box blank for a one-sided limit.
+- Expected fallout assumes a normal distribution; compare it with the
+  "Actually out of spec" count.
+- New test columns (temperature, voltage, sleep current...) are added in
+  `MEASUREMENT_COLUMNS` in `tnt/loader.py`; they then appear in every chart.
 - Factory data files are never committed. `.gitignore` excludes CSVs and
   database files.
 
